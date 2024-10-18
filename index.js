@@ -15,9 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // API routes
-app.use("/user", users);
-app.use("/lesson", lessons);
-app.use("/sound", sounds);
+app.use("/api/user", users);
+app.use("/api/lesson", lessons);
+app.use("/api/sound", sounds);
 
 // start the Express server
 app.listen(PORT, () => {

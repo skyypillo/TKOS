@@ -120,7 +120,7 @@ router.post("/login", async (req, res) => {
 // ############################################ LOG OUT #############################################################
 // This section will help you log out a user
 router.get("/logout", (req, res) => {
-  res.clearCookie("token").status(200).json({ message: "Logout successful" });
+  // res.clearCookie("token").status(200).json({ message: "Logout successful" });
 });
 
 // ############################################ PROFILE #############################################################
@@ -134,7 +134,7 @@ router.get("/profile", async (req, res) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
           console.log("Token expired");
-          res.clearCookie("token");
+          // res.clearCookie("token");
           return res
             .status(401)
             .json({ error: "Session expired, please log in again" });
