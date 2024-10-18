@@ -78,70 +78,105 @@ router.post("/register", async (req, res) => {
 
 // ############################################ LOG IN #############################################################
 // This section will help you login in a user
+// router.post("/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     let collection = await userDB.collection("users");
+
+//     // Check if user exists
+//     const user = await collection.findOne({ email });
+
+//     if (!user) {
+//       console.log("Incorrect password or email");
+//       return res.status(400).json({
+//         error: "Incorrect password or email",
+//       });
+//     }
+
+//     // check if password match
+//     const match = await comparePasswords(password, user.password);
+//     if (match) {
+//       const token = jwt.sign(
+//         { userId: user._id, email: user.email, username: user.username },
+//         process.env.JWT_SECRET,
+//         { expiresIn: 60 * 60 }
+//       );
+//       res
+//         .cookie("token", token)
+//         .status(200)
+//         .json({ message: "Login successful", token });
+//       // res
+//       //   .cookie("token", token, {
+//       //     httpOnly: true,
+//       //     // secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+//       //     sameSite: "strict", // Protect against CSRF
+//       //     maxAge: 3600000, // 1 hour in milliseconds
+//       //     // domain: ".tkostest.netlify.app", // Use your actual domain
+//       //   })
+//       //   .status(200)
+//       //   .json({ message: "Login successful", token });
+//     } else {
+//       console.log("Incorrect password or email");
+//       res.status(400).json({
+//         error: "Incorrect password or email",
+//       });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Error logging in user" });
+//   }
+// });
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     let collection = await userDB.collection("users");
 
-    // Check if user exists
     const user = await collection.findOne({ email });
 
     if (!user) {
-      console.log("Incorrect password or email");
+      console.log("User not found:", email);
       return res.status(400).json({
         error: "Incorrect password or email",
       });
     }
 
-    // check if password match
     const match = await comparePasswords(password, user.password);
     if (match) {
       const token = jwt.sign(
         { userId: user._id, email: user.email, username: user.username },
         process.env.JWT_SECRET,
-        { expiresIn: 60 * 60 }
+        { expiresIn: "1h" }
       );
-      // res
-      //   .cookie("token", token)
-      //   .status(200)
-      //   .json({ message: "Login successful", token });
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          // secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-          sameSite: "strict", // Protect against CSRF
-          maxAge: 3600000, // 1 hour in milliseconds
-          // domain: ".tkostest.netlify.app", // Use your actual domain
-        })
-        .status(200)
-        .json({ message: "Login successful", token });
+
+      console.log("Token generated:", token);
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true, // Ensure this is true for HTTPS
+        sameSite: "none", // Try this if your frontend and backend are on different domains
+        maxAge: 3600000, // 1 hour
+      });
+
+      console.log("Cookie set:", res.getHeader("Set-Cookie"));
+
+      return res.status(200).json({ message: "Login successful", token });
     } else {
-      console.log("Incorrect password or email");
-      res.status(400).json({
+      console.log("Password mismatch for user:", email);
+      return res.status(400).json({
         error: "Incorrect password or email",
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(500).json({ error: "Error logging in user" });
   }
 });
 
 // ############################################ LOG OUT #############################################################
 // This section will help you log out a user
-// router.get("/logout", (req, res) => {
-//   // res.clearCookie("token").status(200).json({ message: "Logout successful" });
-// });
 router.get("/logout", (req, res) => {
-  res
-    .clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      // domain: ".tkostest.netlify.app",
-    })
-    .status(200)
-    .json({ message: "Logout successful" });
+  res.clearCookie("token").status(200).json({ message: "Logout successful" });
 });
 
 // ############################################ PROFILE #############################################################
@@ -155,7 +190,7 @@ router.get("/profile", async (req, res) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
           console.log("Token expired");
-          // res.clearCookie("token");
+          res.clearCookie("token");
           return res
             .status(401)
             .json({ error: "Session expired, please log in again" });
