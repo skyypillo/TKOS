@@ -101,8 +101,18 @@ router.post("/login", async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: 60 * 60 }
       );
+      // res
+      //   .cookie("token", token)
+      //   .status(200)
+      //   .json({ message: "Login successful", token });
       res
-        .cookie("token", token)
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+          sameSite: "strict", // Protect against CSRF
+          maxAge: 3600000, // 1 hour in milliseconds
+          // domain: ".localhost:5173", // Use your actual domain
+        })
         .status(200)
         .json({ message: "Login successful", token });
     } else {
@@ -119,8 +129,19 @@ router.post("/login", async (req, res) => {
 
 // ############################################ LOG OUT #############################################################
 // This section will help you log out a user
+// router.get("/logout", (req, res) => {
+//   // res.clearCookie("token").status(200).json({ message: "Logout successful" });
+// });
 router.get("/logout", (req, res) => {
-  // res.clearCookie("token").status(200).json({ message: "Logout successful" });
+  res
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      // domain: '.yourdomain.com'
+    })
+    .status(200)
+    .json({ message: "Logout successful" });
 });
 
 // ############################################ PROFILE #############################################################
