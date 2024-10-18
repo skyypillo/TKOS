@@ -111,7 +111,7 @@ router.post("/login", async (req, res) => {
           secure: process.env.NODE_ENV === "production", // Use secure cookies in production
           sameSite: "strict", // Protect against CSRF
           maxAge: 3600000, // 1 hour in milliseconds
-          domain: "tkostest.netlify.app", // Use your actual domain
+          domain: ".tkostest.netlify.app", // Use your actual domain
         })
         .status(200)
         .json({ message: "Login successful", token });
@@ -138,7 +138,7 @@ router.get("/logout", (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      domain: "tkostest.netlify.app",
+      domain: ".tkostest.netlify.app",
     })
     .status(200)
     .json({ message: "Logout successful" });
