@@ -205,6 +205,13 @@ router.get("/profile", async (req, res) => {
 });
 
 // ############################################ FORGOT PASSWORD #############################################################
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_USER,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 router.post("/forgotpassword", async (req, res) => {
   const { email } = req.body;
 
@@ -231,7 +238,7 @@ router.post("/forgotpassword", async (req, res) => {
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
       Please click on the following link, or paste this into your browser to complete the process:\n\n
 
-      http://localhost:5173/reset/${passtoken}
+      ${process.env.DOMAIN}/reset/${passtoken}
 
       If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
@@ -239,13 +246,13 @@ router.post("/forgotpassword", async (req, res) => {
     // http://localhost:5050/reset/${token}\n\n
     // ${passtoken}
 
-    // transporter.sendMail(mailOptions, (err, response) => {
-    //   if (err) {
-    //     console.error("There was an error: ", err);
-    //   } else {
-    //     res.status(200).json({ message: "Recovery email sent" });
-    //   }
-    // });
+    transporter.sendMail(mailOptions, (err, response) => {
+      if (err) {
+        console.error("There was an error: ", err);
+      } else {
+        res.status(200).json({ message: "Recovery email sent" });
+      }
+    });
 
     console.log("EMAIL SENT TO " + user.email + "TOKEN: " + { passtoken });
     console.log(`http://localhost:5173/reset/${passtoken}\n\n`);
